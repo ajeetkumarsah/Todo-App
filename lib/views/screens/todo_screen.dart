@@ -3,9 +3,11 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:todo_app/controllers/todo_controller.dart';
 import 'package:todo_app/data/model/todo_model.dart';
+import 'package:todo_app/views/screens/todo_form_screen.dart';
 
 class TodoScreen extends StatelessWidget {
-  const TodoScreen({super.key});
+  TodoScreen({super.key});
+  final TodoController controller = Get.put(TodoController());
 
   @override
   Widget build(BuildContext context) {
@@ -17,73 +19,62 @@ class TodoScreen extends StatelessWidget {
           style: GoogleFonts.inter(),
         ),
       ),
-      body: GetBuilder<TodoController>(
-        init: TodoController(),
-        initState: (_) {},
-        builder: (ctlr) {
-          return ListView.builder(
-            itemCount: ctlr.todoLists.length,
-            itemBuilder: (_, i) {
-              ToDoModel item = ctlr.todoLists[i];
-              return Dismissible(
-                key: Key(item.title ?? '$i'),
-                background: Container(
-                  color: Colors.red,
-                ),
-                onDismissed: (v) {
-                  //
+      body: Obx(() {
+        if (controller.todoLists.isEmpty) {
+          return const Center(child: Text('No todos yet.'));
+        }
 
-                  ctlr.deleteTodo(i);
-                  Get.showSnackbar(
-                      const GetSnackBar(title: 'Item is deleted!'));
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  child: ListTile(
-                    title: Text(
-                      item.title ?? '',
-                      style: GoogleFonts.inter(
-                          fontSize: 16, fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${item.dueDate.toLocal().day - item.dueDate.toLocal().month - item.dueDate.toLocal().year}',
-                          style: GoogleFonts.inter(),
-                        ),
-                        Text(
-                          item.description ?? '',
-                          style: GoogleFonts.inter(
-                            color: Colors.grey[500],
-                          ),
-                        ),
-                      ],
-                    ),
-                    trailing: Text(
-                      item.status ?? '',
-                      style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        color: (item.status != null &&
-                                item.status!.startsWith('Active'))
-                            ? Colors.green
-                            : Colors.yellow,
-                      ),
-                    ),
-                  ),
+        return ListView.builder(
+          itemCount: controller.todoLists.length,
+          itemBuilder: (context, i) {
+            final item = controller.todoLists[i];
+            return Dismissible(
+              key: Key(item.title ?? '$i'),
+              background: Container(
+                color: Colors.red,
+              ),
+              onDismissed: (v) {
+                //
+
+                controller.deleteTodo(item);
+                Get.showSnackbar(const GetSnackBar(
+                  title: 'Item is deleted!',
+                  message: 'deleted successfully!',
+                  snackStyle: SnackStyle.FLOATING,
+                ));
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              );
-            },
-          );
-        },
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                child: ListTile(
+                  title: Text(item.title),
+                  subtitle: Text(item.description ?? ''),
+                  trailing: Checkbox(
+                    value: item.isCompleted,
+                    onChanged: (value) {
+                      controller.updateTodoStatus(item,
+                          value! ? TodoStatus.completed : TodoStatus.todo);
+                    },
+                  ),
+                  onTap: () => Get.to(() => TodoFormScreen(todo: item)),
+                ),
+              ),
+            );
+          },
+        );
+      }),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.deepPurple,
+        onPressed: () => Get.to(
+          () => TodoFormScreen(),
+        ),
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
       ),
     );
   }

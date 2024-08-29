@@ -3,7 +3,8 @@ import 'package:hive/hive.dart';
 import 'package:todo_app/data/model/todo_model.dart';
 
 class TodoController extends GetxController {
-  late Box todoBox;
+  final Box<ToDoModel> todoBox = Hive.box<ToDoModel>('todos');
+
   //list
 
   RxList todoLists = <ToDoModel>[].obs;
@@ -13,37 +14,37 @@ class TodoController extends GetxController {
   //
 //String
   String get selectedStatus => _selectedStatus;
-  String _selectedStatus = '';
+  final String _selectedStatus = '';
   @override
   void onInit() {
     super.onInit();
-    todoBox = Hive.box('todo');
-
-    loadTodoList();
+    loadTodos();
   }
 
-  void loadTodoList() {
-    //to load the list from the stored
-    todoLists.value = List<ToDoModel>.from(todoBox.values);
+  void loadTodos() {
+    todoLists.assignAll(todoBox.values.toList());
   }
 
-  void addTodo({required String title, required String decs, DateTime? date}) {
-    ToDoModel item = ToDoModel(
-        title: title,
-        description: decs,
-        status: selectedStatus,
-        dueDate: date ?? DateTime.now().add(const Duration(days: 2)));
-
-    todoBox.putAt(0, item.toJson());
+  void addTodo(ToDoModel item) {
+    todoBox.add(item);
+    todoLists.add(item);
   }
 
-  void deleteTodo(int index) {
-    todoBox.delete(index);
+  void updateTodoStatus(ToDoModel item, TodoStatus status) {
+    item.status = status;
+    item.save();
     todoLists.refresh();
   }
 
-  void onChnageStatus(String value) {
-    _selectedStatus = value;
-    update();
+  void deleteTodo(ToDoModel item) {
+    item.delete();
+    todoLists.remove(item);
+  }
+
+  void clearCompletedTodos() {
+    todoBox.values.where((item) => item.isCompleted).forEach((item) {
+      item.delete();
+    });
+    loadTodos();
   }
 }

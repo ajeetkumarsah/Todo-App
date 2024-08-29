@@ -1,26 +1,39 @@
-class ToDoModel {
-  final String? title;
-  final String? description;
-  final String? status;
-  final DateTime dueDate;
+import 'package:hive/hive.dart';
 
-  ToDoModel(
-      {required this.title,
-      required this.description,
-      required this.status,
-      required this.dueDate});
+part 'todo_model.g.dart';
 
-  factory ToDoModel.fromJson(Map<String, dynamic> json) => ToDoModel(
-        title: json["title"],
-        description: json["description"],
-        status: json["status"],
-        dueDate: json["dueDate"],
-      );
+@HiveType(typeId: 0)
+class ToDoModel extends HiveObject {
+  @HiveField(0)
+  late String title;
 
-  Map<String, dynamic> toJson() => {
-        "title": title,
-        "description": description,
-        "status": status,
-        "dueDate": dueDate,
-      };
+  @HiveField(1)
+  String? description;
+
+  @HiveField(2)
+  DateTime? dueDate;
+
+  @HiveField(3)
+  bool isCompleted = false;
+
+  @HiveField(4)
+  DateTime? createdAt;
+
+  @HiveField(5)
+  TodoStatus status = TodoStatus.todo;
+}
+
+@HiveType(typeId: 1)
+enum TodoStatus {
+  @HiveField(0)
+  todo,
+
+  @HiveField(1)
+  active,
+
+  @HiveField(2)
+  inProgress,
+
+  @HiveField(3)
+  completed,
 }
