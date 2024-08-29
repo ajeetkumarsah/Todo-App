@@ -27,9 +27,9 @@ class TodoScreen extends StatelessWidget {
         return ListView.builder(
           itemCount: controller.todoLists.length,
           itemBuilder: (context, i) {
-            final item = controller.todoLists[i];
+            final ToDoModel item = controller.todoLists[i];
             return Dismissible(
-              key: Key(item.title ?? '$i'),
+              key: Key(item.title),
               background: Container(
                 color: Colors.red,
               ),
@@ -50,15 +50,25 @@ class TodoScreen extends StatelessWidget {
                 ),
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 child: ListTile(
-                  title: Text(item.title),
-                  subtitle: Text(item.description ?? ''),
-                  trailing: Checkbox(
-                    value: item.isCompleted,
-                    onChanged: (value) {
-                      controller.updateTodoStatus(item,
-                          value! ? TodoStatus.completed : TodoStatus.todo);
-                    },
+                  title: Text(
+                    item.title,
+                    style: GoogleFonts.inter(),
                   ),
+                  subtitle: Text(
+                    item.description ?? '',
+                    style: GoogleFonts.inter(),
+                  ),
+                  trailing: Text(
+                    '${item.dueDate?.day}-${item.dueDate?.month}-${item.dueDate?.year}',
+                    style: GoogleFonts.inter(),
+                  ),
+                  //  Checkbox(
+                  //   value: item.isCompleted,
+                  // onChanged: (value) {
+                  //   controller.updateTodoStatus(item,
+                  //       value! ? TodoStatus.completed : TodoStatus.todo);
+                  // },
+                  // ),
                   onTap: () => Get.to(() => TodoFormScreen(todo: item)),
                 ),
               ),
